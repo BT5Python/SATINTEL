@@ -3,143 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EVOLUTION IS MY REVOLUTION - Login Portal</title>
+<title>Login + Timer</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Video background */
-video#bg-video {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
-}
-
-/* Lapisan gelap */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.55);
-  z-index: -1;
-}
-
-/* Konten utama */
-.content {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  color: white;
-  text-align: center;
-  font-family: 'Courier New', monospace;
-  width: 90%;
-  max-width: 450px;
-}
-
-h1 {
-  font-size: 2em;
-  margin-bottom: 25px;
-  text-shadow: 0 0 8px #00ff00;
-}
-
-/* Form login */
-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #00ff00;
-  border-radius: 6px;
-  background: rgba(0,0,0,0.3);
-  color: #ffffff;
-  font-size: 1em;
-  text-align: center;
-  outline: none;
-}
-
-input::placeholder {
-  color: #cccccc;
-}
-
-/* Tombol login */
-button {
-  width: 100%;
-  padding: 12px;
-  background-color: #00ff00;
-  color: black;
-  border: none;
-  border-radius: 6px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-button:hover {
-  background-color: #00cc00;
-  box-shadow: 0 0 12px #00ff00;
-}
+  body { font-family: "Courier New", monospace; color: #00ff00; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  #timer { font-size: 60px; letter-spacing: -2px; transition: color 0.2s ease; }
+  #message { font-size: 20px; color: red; margin-top: 5px; }
+  #loginForm { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  input[type="text"], input[type="password"] { padding: 8px; font-size: 16px; width: 200px; color: #00ff00; }
+  button { padding: 10px 20px; font-size: 18px; cursor: pointer; background: red; color: white; border: none; }
+  button:hover { background: #00cc70; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  .blink { animation: blink 0.5s infinite; color: #ff3030 !important; }
 </style>
 </head>
 <body>
 
-<!-- Video Background -->
-<video id="bg-video" autoplay muted loop playsinline>
-  <source src="Desain tanpa judul.mp4" type="video/mp4">
-  Browser Anda tidak mendukung video.
-</video>
+<h1></h1>
+<div id="timer">00:10.00</div>
+<div id="message"></div>
 
-<!-- Lapisan gelap -->
-<div class="overlay"></div>
-
-<!-- Lagu background -->
-<audio id="bg-music" autoplay loop>
-  <source src="Helloween-Forever-And-One-Neverland.aac" type="audio/mpeg">
-  Browser Anda tidak mendukung audio.
-</audio>
-
-<!-- Konten tengah -->
-<div class="content">
-  <h1>PUSLAT KODIKLATAU</h1>
-  <form onsubmit="return loginSuccess(event)">
-    <input type="text" name="admin" placeholder="Username" required autocomplete="off">
-    <input type="password" name="kodiklatau" placeholder="Password" required autocomplete="off">
-    <button type="submit">Login</button>
-  </form>
-</div>
+<form id="loginForm">
+  <input type="text" placeholder="Username" id="username">
+  <input type="password" placeholder="Password" id="password">
+  <button type="button" id="loginBtn">Login</button>
+</form>
 
 <script>
-function loginSuccess(event) {
-  event.preventDefault(); // Mencegah reload halaman
-  // Di sini bisa tambahkan validasi username/password jika diperlukan
-  window.location.href = "form.html"; // Arahkan ke halaman database
+let totalMilliseconds = 60 * 1000; // 60 detik
+const timerDisplay = document.getElementById("timer");
+const message = document.getElementById("message");
+const loginForm = document.getElementById("loginForm");
+
+function updateTimer() {
+  const minutes = Math.floor(totalMilliseconds / 60000);
+  const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
+  timerDisplay.textContent = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}.${String(milliseconds).padStart(2,"0")}`;
+  if(totalMilliseconds <= 10000) timerDisplay.classList.add("blink");
 }
+
+function startTimer() {
+  const interval = setInterval(()=>{
+    if(totalMilliseconds>0){
+      totalMilliseconds -=10;
+      updateTimer();
+    } else {
+      clearInterval(interval);
+      timerDisplay.textContent="00:00.00";
+      timerDisplay.classList.remove("blink");
+      timerDisplay.style.color="#ff3030";
+      message.textContent="your not allowed!";
+      if(!loginForm.dataset.logged){
+        loginForm.style.display="none";
+      }
+    }
+  },10);
+}
+
+updateTimer();
+startTimer();
+
+// Login check
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  const correctUsername = "admin";
+  const correctPassword = "1234";
+
+  if(username === correctUsername && password === correctPassword){
+    message.textContent = "✅ Login berhasil!";
+    loginForm.dataset.logged = "true"; // tandai login berhasil
+    // Buka Google Sites di tab baru
+    window.open("https://sites.google.com/view/disperspuslatkodiklatau/login"); // ganti dengan URL Google Sites tujuan
+  } else {
+    message.textContent = "❌ Username atau Password salah!";
+  }
+});
 </script>
 
 </body>
+<audio id="bgMusic" loop autoplay>
+  <source src="<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login + Timer</title>
+<style>
+  body { font-family: "Courier New", monospace; color: #00ff00; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  #timer { font-size: 60px; letter-spacing: -2px; transition: color 0.2s ease; }
+  #message { font-size: 20px; color: red; margin-top: 5px; }
+  #loginForm { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  input[type="text"], input[type="password"] { padding: 8px; font-size: 16px; width: 200px; color: #00ff00; }
+  button { padding: 10px 20px; font-size: 18px; cursor: pointer; background: red; color: white; border: none; }
+  button:hover { background: #00cc70; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  .blink { animation: blink 0.5s infinite; color: #ff3030 !important; }
+</style>
+</head>
+<body>
+
+<h1></h1>
+<div id="timer">00:10.00</div>
+<div id="message"></div>
+
+<form id="loginForm">
+  <input type="text" placeholder="Username" id="username">
+  <input type="password" placeholder="Password" id="password">
+  <button type="button" id="loginBtn">Login</button>
+</form>
+
+<script>
+let totalMilliseconds = 30 * 1000; // 30 detik
+const timerDisplay = document.getElementById("timer");
+const message = document.getElementById("message");
+const loginForm = document.getElementById("loginForm");
+
+function updateTimer() {
+  const minutes = Math.floor(totalMilliseconds / 60000);
+  const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
+  timerDisplay.textContent = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}.${String(milliseconds).padStart(2,"0")}`;
+  if(totalMilliseconds <= 10000) timerDisplay.classList.add("blink");
+}
+
+function startTimer() {
+  const interval = setInterval(()=>{
+    if(totalMilliseconds>0){
+      totalMilliseconds -=10;
+      updateTimer();
+    } else {
+      clearInterval(interval);
+      timerDisplay.textContent="00:00.00";
+      timerDisplay.classList.remove("blink");
+      timerDisplay.style.color="#ff3030";
+      message.textContent="your not allowed!";
+      if(!loginForm.dataset.logged){
+        loginForm.style.display="none";
+      }
+    }
+  },10);
+}
+
+updateTimer();
+startTimer();
+
+// Login check
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  const correctUsername = "admin";
+  const correctPassword = "1234";
+
+  if(username === correctUsername && password === correctPassword){
+    message.textContent = "✅ Login berhasil!";
+    loginForm.dataset.logged = "true"; // tandai login berhasil
+    // Buka Google Sites di tab baru
+    window.open("https://sites.google.com/view/disperspuslatkodiklatau/login"); // ganti dengan URL Google Sites tujuan
+  } else {
+    message.textContent = "❌ Username atau Password salah!";
+  }
+});
+</script>
+
+</body>
+<audio id="bgMusic" loop autoplay>
+  <source src="<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login + Timer</title>
+<style>
+  body { font-family: "Courier New", monospace; color: #00ff00; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  #timer { font-size: 60px; letter-spacing: -2px; transition: color 0.2s ease; }
+  #message { font-size: 20px; color: red; margin-top: 5px; }
+  #loginForm { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  input[type="text"], input[type="password"] { padding: 8px; font-size: 16px; width: 200px; color: #00ff00; }
+  button { padding: 10px 20px; font-size: 18px; cursor: pointer; background: red; color: white; border: none; }
+  button:hover { background: #00cc70; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+  .blink { animation: blink 0.5s infinite; color: #ff3030 !important; }
+</style>
+</head>
+<body>
+
+<h1></h1>
+<div id="timer">00:10.00</div>
+<div id="message"></div>
+
+<form id="loginForm">
+  <input type="text" placeholder="Username" id="username">
+  <input type="password" placeholder="Password" id="password">
+  <button type="button" id="loginBtn">Login</button>
+</form>
+
+<script>
+let totalMilliseconds = 30 * 1000; // 30 detik
+const timerDisplay = document.getElementById("timer");
+const message = document.getElementById("message");
+const loginForm = document.getElementById("loginForm");
+
+function updateTimer() {
+  const minutes = Math.floor(totalMilliseconds / 60000);
+  const seconds = Math.floor((totalMilliseconds % 60000) / 1000);
+  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
+  timerDisplay.textContent = `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}.${String(milliseconds).padStart(2,"0")}`;
+  if(totalMilliseconds <= 10000) timerDisplay.classList.add("blink");
+}
+
+function startTimer() {
+  const interval = setInterval(()=>{
+    if(totalMilliseconds>0){
+      totalMilliseconds -=10;
+      updateTimer();
+    } else {
+      clearInterval(interval);
+      timerDisplay.textContent="00:00.00";
+      timerDisplay.classList.remove("blink");
+      timerDisplay.style.color="#ff3030";
+      message.textContent="your not allowed!";
+      if(!loginForm.dataset.logged){
+        loginForm.style.display="none";
+      }
+    }
+  },10);
+}
+
+updateTimer();
+startTimer();
+
+// Login check
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  const correctUsername = "admin";
+  const correctPassword = "1234";
+
+  if(username === correctUsername && password === correctPassword){
+    message.textContent = "✅ Login berhasil!";
+    loginForm.dataset.logged = "true"; // tandai login berhasil
+    // Buka Google Sites di tab baru
+    window.open("https://sites.google.com/view/disperspuslatkodiklatau/login"); // ganti dengan URL Google Sites tujuan
+  } else {
+    message.textContent = "❌ Username atau Password salah!";
+  }
+});
+</script>
+
+</body>
+<audio id="bgMusic" loop autoplay>
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
 </html>
-
-
-
-
-
-
-
-
-
-
